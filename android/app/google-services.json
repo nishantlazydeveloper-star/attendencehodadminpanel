@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "1041669444749",
+    "project_id": "attendence-26702",
+    "storage_bucket": "attendence-26702.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1041669444749:android:c65f0aa474fd1188923ec4",
+        "android_client_info": {
+          "package_name": "com.example.adminpanel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1041669444749-9sqjc8bohnkn4i83ob9jjq42gi6bj17s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLZLnqlo7nXztdC1g75Unx39MXX7zrKHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1041669444749-9sqjc8bohnkn4i83ob9jjq42gi6bj17s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1041669444749-5p10k0evk2i80bl0dhrhqe78dhnksih8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.attendance"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1041669444749:android:da8172680dbbe433923ec4",
+        "android_client_info": {
+          "package_name": "com.example.attendance"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1041669444749-9sqjc8bohnkn4i83ob9jjq42gi6bj17s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLZLnqlo7nXztdC1g75Unx39MXX7zrKHo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1041669444749-9sqjc8bohnkn4i83ob9jjq42gi6bj17s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1041669444749-5p10k0evk2i80bl0dhrhqe78dhnksih8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.attendance"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

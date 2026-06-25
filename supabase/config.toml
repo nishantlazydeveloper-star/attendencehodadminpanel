@@ -1,0 +1,4 @@
+project_id = "ucieffbusxpyohkdkwhw"
+
+[functions.manage-hod]
+verify_jwt = false
