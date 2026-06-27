@@ -322,6 +322,7 @@ class _HodmanagementViewState extends State<HodmanagementView> {
     if (confirmed) {
       final deleted = await _run(hod.id, () => _service.deleteHod(hod.id));
       if (deleted && mounted) {
+        _refreshHods();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('HOD deleted.')));

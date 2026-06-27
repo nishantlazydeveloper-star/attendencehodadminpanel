@@ -88,7 +88,12 @@ class HodService {
   }
 
   Future<void> deleteHod(String id) async {
-    await _invoke({'action': 'delete', 'id': id});
+    final response = await _invoke({'action': 'delete', 'id': id});
+    if (response['success'] == true) return;
+
+    throw HodServiceException(
+      _responseMessage(response) ?? 'HOD delete was not confirmed.',
+    );
   }
 
   Future<void> repairLegacyHods() async {
@@ -120,21 +125,24 @@ class HodService {
         body: body,
       );
       final data = response.data;
+      final status = response.status;
       AppLogger.log(
         'HodService',
         'Supabase HOD function call succeeded',
-        data: {
-          'status': response.status,
-          'adminUid': session.user.id,
-          'response': data,
-        },
+        data: {'status': status, 'adminUid': session.user.id, 'response': data},
       );
       if (data is! Map) {
         throw const HodServiceException(
           'The HOD service returned an invalid response.',
         );
       }
-      return Map<String, dynamic>.from(data);
+      final mapped = Map<String, dynamic>.from(data);
+      if (mapped['success'] == false) {
+        throw HodServiceException(
+          _responseMessage(mapped) ?? 'Unable to complete the HOD operation.',
+        );
+      }
+      return mapped;
     } on FunctionException catch (error, stackTrace) {
       AppLogger.error(
         'HodService',
@@ -181,6 +189,9 @@ class HodService {
     if (details is Map && details['error'] != null) {
       return details['error'].toString();
     }
+    if (details is Map && details['message'] != null) {
+      return details['message'].toString();
+    }
     if (details is Map && details['code'] == 'NOT_FOUND') {
       return 'The manage-hod Supabase Edge Function is not deployed.';
     }
@@ -189,6 +200,12 @@ class HodService {
       return 'The manage-hod Supabase Edge Function is not deployed.';
     }
     return error.reasonPhrase ?? 'Unable to complete the HOD operation.';
+  }
+
+  String? _responseMessage(Map<String, dynamic> response) {
+    final message = response['message'] ?? response['error'];
+    final text = message?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 
   bool _isUuid(String value) {

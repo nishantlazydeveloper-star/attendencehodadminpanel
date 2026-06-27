@@ -103,12 +103,26 @@ class HodDetailsView extends StatelessWidget {
                   SizedBox(height: 20.h),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton.icon(
+                    height: 48,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E4D4F),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
                       onPressed: () => context.go(
                         '${AppRoutes.hodManagement}?id=${Uri.encodeComponent(hod.hodCode)}',
                       ),
-                      icon: const Icon(Icons.edit),
-                      label: const Text('Edit HOD'),
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: const Text(
+                        'Edit HOD',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],

@@ -17,6 +17,15 @@ type RequestBody = {
   is_active?: boolean;
 };
 
+type SupabaseError = {
+  code?: string;
+  message?: string;
+  details?: string;
+  hint?: string;
+  status?: number;
+  statusCode?: number;
+};
+
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
     status,
@@ -35,6 +44,21 @@ function required(value: unknown, label: string, max = 150) {
 
 function safeBody(body: RequestBody) {
   return { ...body, password: body.password ? "<redacted>" : undefined };
+}
+
+function logSupabaseError(
+  message: string,
+  error: SupabaseError,
+  context: Record<string, unknown> = {},
+) {
+  console.error("[manage-hod] " + message, {
+    ...context,
+    status: error.status ?? error.statusCode,
+    code: error.code,
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+  });
 }
 
 async function findAuthUserId(
@@ -410,48 +434,54 @@ Deno.serve(async (request) => {
 
       case "delete": {
         const id = required(body.id, "HOD ID");
-        const { data: existing, error: existingError } = await adminClient
-          .from("hods")
-          .select("id, email")
-          .eq("id", id)
-          .maybeSingle();
-        if (existingError) return json(400, { error: existingError.message });
-
-        const authUserId = await findAuthUserId(adminClient, id, existing?.email);
-        console.log("[manage-hod] Deleting public.hods profile", {
-          id,
-          authUserId,
-          note: "Auth deletion cascades the profile row",
+        const { data, error } = await adminClient.rpc("delete_hod_cascade", {
+          p_hod_id: id,
         });
-        if (authUserId) {
-          console.log("[manage-hod] Deleting Auth user", { authUserId });
-          const { error: deleteAuthError } =
-            await adminClient.auth.admin.deleteUser(authUserId);
-          if (deleteAuthError) {
-            console.error(
-                "[manage-hod] Auth user deletion failed",
-                deleteAuthError,
-            );
-            return json(400, { error: deleteAuthError.message });
-          }
-        } else {
-          console.warn("[manage-hod] No matching Auth user for HOD delete", {
-            id,
-            email: existing?.email,
+        if (error) {
+          logSupabaseError("Transactional HOD delete failed", error, { id });
+          const status = error.code === "23503" ? 409 : 500;
+          return json(status, {
+            success: false,
+            error: error.code === "23503"
+              ? "HOD deletion is blocked by a related database record."
+              : error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint,
           });
         }
 
-        // The FK uses ON DELETE CASCADE. This explicit delete is idempotent and
-        // also supports pre-existing tables without the cascade constraint.
-        const { error: deleteProfileError } = await adminClient
-          .from("hods")
-          .delete()
-          .eq("id", id);
-        if (deleteProfileError) {
-          return json(500, { error: deleteProfileError.message });
+        if (!data || typeof data !== "object") {
+          console.error("[manage-hod] Transactional HOD delete returned invalid response", {
+            id,
+            response: data,
+          });
+          return json(500, {
+            success: false,
+            error: "HOD delete returned an invalid response.",
+          });
         }
-        console.log("[manage-hod] HOD deleted", { id });
-        return json(200, { id, success: true });
+
+        const result = data as Record<string, unknown>;
+        if (result.success !== true) {
+          console.error("[manage-hod] Transactional HOD delete was not confirmed", {
+            id,
+            response: result,
+          });
+          return json(500, {
+            success: false,
+            error: typeof result.message === "string"
+              ? result.message
+              : "HOD deletion was not confirmed.",
+            response: result,
+          });
+        }
+
+        console.info("[manage-hod] Transactional HOD delete completed", {
+          id,
+          response: result,
+        });
+        return json(200, result);
       }
 
       default:
